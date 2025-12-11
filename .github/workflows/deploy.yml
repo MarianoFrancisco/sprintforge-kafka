@@ -13,9 +13,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set environment variables based on branch
-        run: |
-          echo "HOST=${{ secrets.AWS_VM_HOST }}" >> $GITHUB_ENV
+      - name: Set HOST env
+        run: echo "HOST=${{ secrets.AWS_VM_HOST }}" >> $GITHUB_ENV
 
       - name: Set up SSH
         run: |
@@ -27,13 +26,22 @@ jobs:
       - name: Deploy to AWS VM
         run: |
           ssh ${{ secrets.AWS_VM_USER }}@"$HOST" << EOF
-            cd ./sprintforge-kafka
+            set -e
+
+            cd ~
+
+            if [ ! -d "sprintforge-kafka" ]; then
+              git clone https://github.com/MarianoFrancisco/sprintforge-kafka.git
+            fi
+
+            cd sprintforge-kafka
 
             if [ ! -f .env ]; then
               echo "KAFKA_PORT=9092" > .env
               echo "STATIC_IP=${HOST}" >> .env
             fi
 
+            git fetch --all
             git checkout ${GITHUB_REF_NAME}
             git pull
 
