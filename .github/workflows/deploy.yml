@@ -36,6 +36,8 @@ jobs:
 
             cd sprintforge-kafka
 
+            sudo docker network inspect kafka-network >/dev/null 2>&1 || sudo docker network create kafka-network
+
             if [ ! -f .env ]; then
               echo "KAFKA_PORT=9092" > .env
               echo "STATIC_IP=${HOST}" >> .env
